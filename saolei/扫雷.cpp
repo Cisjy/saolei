@@ -12,15 +12,15 @@ using namespace std;
 #define IMG_SIZE 40
 
 void initMap(int map[ROW][COL]);
-void showMap(int map[ROW][COL]);
 void mouseEvent(int map[ROW][COL]);
 void drawMap(int map[ROW][COL], IMAGE img[]);
 void open(int map[ROW][COL], int row, int col);
 void judge(int map[ROW][COL], int row, int col);
-void judge_game(int map[ROW][COL]);
+void judge_game(int map[ROW][COL],IMAGE img[]);
 
 bool isOver = false;
 int  n_count = 0;
+IMAGE img[12];
 
 
 void initMap(int map[ROW][COL])
@@ -64,18 +64,6 @@ void initMap(int map[ROW][COL])
 		}
 	}
 }
-void showMap(int map[ROW][COL])
-{
-	for(int i = 0; i < ROW; i++)
-	{
-		for(int j = 0; j < COL;j++)
-		{
-			printf("%2d ", map[i][j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
 void mouseEvent(int map[ROW][COL])
 {
 	ExMessage msg;
@@ -91,15 +79,13 @@ void mouseEvent(int map[ROW][COL])
 				map[m][n] -= 10;
 				open(map, m, n);
 				judge(map, m, n);
-				judge_game(map);
-				showMap(map);
+				judge_game(map,img);
 			}
 			else if(map[m][n] >= 1 && map[m][n] <= 8)
 			{
 				open(map, m, n);
 				judge(map, m, n);
-				judge_game(map);
-				showMap(map);
+				judge_game(map,img);
 			}
 		}
 		else if(msg.message == WM_RBUTTONDOWN)
@@ -178,7 +164,17 @@ void open(int map[ROW][COL], int row, int col)
 		}
 		if(!flag)
 		{
-			isOver = true;                                             //点错旗子了,直接游戏失败
+			isOver = true;													//点错旗子了,直接游戏失败
+			for(int i = 0;i < ROW; i++)
+			{
+				for(int j = 0 ;j < COL;j++)
+				{
+					if(map[i][j] == 9)
+					{
+						map[i][j] -= 10;
+					}
+				}
+			}
 		}
 		else if (flag && num == map[row][col])                           //说明旗子都插在了正确的位置上,并且没有雷遗漏了
 		{
@@ -211,16 +207,16 @@ void judge(int map[ROW][COL], int row, int col)
 		isOver = true;
 	}
 }
-void judge_game(int map[ROW][COL])
+void judge_game(int map[ROW][COL], IMAGE img[])
 {
 	if(isOver)
 	{
+		drawMap(map, img);
 		int ret = MessageBox(GetHWnd(), "你已经输了,是否继续游戏?", "hit", MB_OKCANCEL);
 		if(ret == IDOK)
 		{
 			memset(map,0, ROW * COL * sizeof(int));
 			initMap(map);
-			showMap(map);
 			isOver = false;
 			n_count = 0;
 		}
@@ -236,7 +232,6 @@ void judge_game(int map[ROW][COL])
 		{
 			memset(map, 0, ROW * COL * sizeof(int));
 			initMap(map);
-			showMap(map);
 			isOver = false;
 			n_count = 0;
 		}
@@ -254,7 +249,7 @@ int main()
 	srand((unsigned)time(0));
 	initgraph(COL * IMG_SIZE, ROW * IMG_SIZE, EW_SHOWCONSOLE);
 
-	IMAGE img[12];
+
 	//图片的加载
 
 	for(int i = 0 ;i < 12; i++)
@@ -266,12 +261,11 @@ int main()
 
 
 	initMap(map);
-	showMap(map);
 	while (1)
 	{
 		mouseEvent(map);
 		drawMap(map, img);
-		judge_game(map);
+		judge_game(map,img);
 
 	}
 	return 0;
